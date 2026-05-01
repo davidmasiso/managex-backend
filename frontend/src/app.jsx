@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'preact/hooks';
 import axios from 'axios';
 
-const API = 'https://managex-backend-production.up.railway.app/api';
+const API = 'https://managex-backend-production-ec28.up.railway.app/api';
+
+// ══════════════════════════════════════
+// FONT AWESOME ICONS (via CDN - add to index.html)
+// <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+// ══════════════════════════════════════
+const Icon = ({ name, style: extraStyle = {} }) => (
+  <i className={`fa-solid fa-${name}`} style={{ fontSize: '0.9rem', ...extraStyle }} />
+);
 
 // ══════════════════════════════════════
 // DESIGN TOKENS
@@ -26,11 +34,11 @@ const s = {
   statLabel: { fontSize:'.72rem', fontWeight:'600', color:'#64748b', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:'.5rem' },
   statValue: { fontSize:'1.7rem', fontWeight:'700', color:'#f1f5f9', lineHeight:1 },
   statSub: { fontSize:'.75rem', color:'#64748b', marginTop:'.3rem' },
-  btnPrimary: { background:'linear-gradient(135deg,#f59e0b,#f97316)', color:'#0f1117', border:'none', borderRadius:'8px', padding:'.6rem 1.3rem', fontSize:'.85rem', fontWeight:'700', cursor:'pointer' },
-  btnSecondary: { background:'#1e2540', color:'#f1f5f9', border:'1px solid rgba(255,255,255,.12)', borderRadius:'8px', padding:'.6rem 1.3rem', fontSize:'.85rem', fontWeight:'600', cursor:'pointer' },
-  btnDanger: { background:'rgba(239,68,68,.1)', color:'#ef4444', border:'1px solid rgba(239,68,68,.2)', borderRadius:'8px', padding:'.42rem 1rem', fontSize:'.78rem', fontWeight:'600', cursor:'pointer' },
-  btnSuccess: { background:'rgba(16,185,129,.1)', color:'#10b981', border:'1px solid rgba(16,185,129,.2)', borderRadius:'8px', padding:'.42rem 1rem', fontSize:'.78rem', fontWeight:'600', cursor:'pointer' },
-  btnSmall: { background:'#1e2540', color:'#94a3b8', border:'1px solid rgba(255,255,255,.08)', borderRadius:'6px', padding:'.3rem .7rem', fontSize:'.75rem', cursor:'pointer' },
+  btnPrimary: { background:'linear-gradient(135deg,#f59e0b,#f97316)', color:'#0f1117', border:'none', borderRadius:'8px', padding:'.6rem 1.3rem', fontSize:'.85rem', fontWeight:'700', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem' },
+  btnSecondary: { background:'#1e2540', color:'#f1f5f9', border:'1px solid rgba(255,255,255,.12)', borderRadius:'8px', padding:'.6rem 1.3rem', fontSize:'.85rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem' },
+  btnDanger: { background:'rgba(239,68,68,.1)', color:'#ef4444', border:'1px solid rgba(239,68,68,.2)', borderRadius:'8px', padding:'.42rem 1rem', fontSize:'.78rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem' },
+  btnSuccess: { background:'rgba(16,185,129,.1)', color:'#10b981', border:'1px solid rgba(16,185,129,.2)', borderRadius:'8px', padding:'.42rem 1rem', fontSize:'.78rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem' },
+  btnSmall: { background:'#1e2540', color:'#94a3b8', border:'1px solid rgba(255,255,255,.08)', borderRadius:'6px', padding:'.3rem .7rem', fontSize:'.75rem', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.3rem' },
   formGrid: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem' },
   field: { display:'flex', flexDirection:'column', gap:'.35rem' },
   label: { fontSize:'.72rem', fontWeight:'600', color:'#94a3b8', textTransform:'uppercase', letterSpacing:'.06em' },
@@ -45,17 +53,16 @@ const s = {
   modal: { background:'#161b27', border:'1px solid rgba(255,255,255,.12)', borderRadius:'16px', width:'min(580px,100%)', maxHeight:'90vh', overflowY:'auto' },
   modalLg: { background:'#161b27', border:'1px solid rgba(255,255,255,.12)', borderRadius:'16px', width:'min(720px,100%)', maxHeight:'90vh', overflowY:'auto' },
   modalHeader: { padding:'1.2rem 1.5rem', borderBottom:'1px solid rgba(255,255,255,.07)', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, background:'#161b27', zIndex:1 },
-  modalTitle: { fontSize:'1rem', fontWeight:'700', color:'#f1f5f9' },
+  modalTitle: { fontSize:'1rem', fontWeight:'700', color:'#f1f5f9', display:'flex', alignItems:'center', gap:'.5rem' },
   modalBody: { padding:'1.5rem' },
   modalFooter: { padding:'1rem 1.5rem', borderTop:'1px solid rgba(255,255,255,.07)', display:'flex', justifyContent:'flex-end', gap:'.6rem', position:'sticky', bottom:0, background:'#161b27' },
   pageHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem' },
   pageTitle: { fontSize:'1.35rem', fontWeight:'700', color:'#f1f5f9' },
   pageSub: { fontSize:'.82rem', color:'#64748b', marginTop:'.2rem' },
   emptyState: { textAlign:'center', padding:'3rem 1.5rem', color:'#64748b' },
-  emptyIcon: { fontSize:'2.5rem', marginBottom:'.75rem' },
+  emptyIcon: { fontSize:'2.5rem', marginBottom:'.75rem', color:'#2a3147' },
   emptyTitle: { fontSize:'.95rem', fontWeight:'600', color:'#94a3b8', marginBottom:'.3rem' },
   divider: { height:'1px', background:'rgba(255,255,255,.06)', margin:'1rem 0' },
-  // Login styles
   loginInput: { background:'#1c2236', border:'1px solid rgba(255,255,255,.12)', borderRadius:'8px', padding:'.65rem .9rem', fontSize:'.9rem', color:'#f1f5f9', outline:'none', width:'100%' },
   loginLabel: { fontSize:'.72rem', fontWeight:'600', color:'#94a3b8', textTransform:'uppercase', letterSpacing:'.06em' },
 };
@@ -90,8 +97,8 @@ const BadgeEstado = ({ estado }) => {
 // ══════════════════════════════════════
 function Login({ onLogin }) {
   const [tab, setTab] = useState('login');
-  const [email, setEmail] = useState('admin@managex.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [nombre, setNombre] = useState('');
   const [negocio, setNegocio] = useState('');
   const [error, setError] = useState('');
@@ -171,8 +178,9 @@ function Login({ onLogin }) {
               <label style={s.loginLabel}>Contraseña</label>
               <input style={s.loginInput} type="password" value={password} onInput={e=>setPassword(e.target.value)} placeholder="••••••••"/>
             </div>
-            <button style={{ background:'linear-gradient(135deg,#f59e0b,#f97316)', color:'#0f1117', border:'none', borderRadius:'8px', padding:'.85rem', fontSize:'1rem', fontWeight:'700', cursor:'pointer', width:'100%', marginTop:'.5rem' }} onClick={handleLogin}>
-              {loading ? 'Iniciando...' : 'Iniciar Sesión →'}
+            <button style={{ background:'linear-gradient(135deg,#f59e0b,#f97316)', color:'#0f1117', border:'none', borderRadius:'8px', padding:'.85rem', fontSize:'1rem', fontWeight:'700', cursor:'pointer', width:'100%', marginTop:'.5rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'.5rem' }} onClick={handleLogin}>
+              <Icon name="right-to-bracket" />
+              {loading ? 'Iniciando...' : 'Iniciar Sesión'}
             </button>
             <div style={{ textAlign:'center', fontSize:'.78rem', color:'#64748b' }}>
               ¿No tienes cuenta? <span style={{ color:'#f59e0b', cursor:'pointer', fontWeight:'600' }} onClick={()=>cambiarTab('registro')}>Regístrate gratis</span>
@@ -199,8 +207,9 @@ function Login({ onLogin }) {
               <label style={s.loginLabel}>Contraseña * (mínimo 6 caracteres)</label>
               <input style={s.loginInput} type="password" value={password} onInput={e=>setPassword(e.target.value)} placeholder="••••••••"/>
             </div>
-            <button style={{ background:'linear-gradient(135deg,#f59e0b,#f97316)', color:'#0f1117', border:'none', borderRadius:'8px', padding:'.85rem', fontSize:'1rem', fontWeight:'700', cursor:'pointer', width:'100%', marginTop:'.5rem' }} onClick={handleRegistro}>
-              {loading ? 'Creando cuenta...' : 'Crear Mi Cuenta Gratis →'}
+            <button style={{ background:'linear-gradient(135deg,#f59e0b,#f97316)', color:'#0f1117', border:'none', borderRadius:'8px', padding:'.85rem', fontSize:'1rem', fontWeight:'700', cursor:'pointer', width:'100%', marginTop:'.5rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'.5rem' }} onClick={handleRegistro}>
+              <Icon name="user-plus" />
+              {loading ? 'Creando cuenta...' : 'Crear Mi Cuenta Gratis'}
             </button>
             <div style={{ textAlign:'center', fontSize:'.78rem', color:'#64748b' }}>
               ¿Ya tienes cuenta? <span style={{ color:'#f59e0b', cursor:'pointer', fontWeight:'600' }} onClick={()=>cambiarTab('login')}>Inicia sesión</span>
@@ -232,6 +241,13 @@ function Dashboard({ token }) {
     }).catch(()=>{});
   },[]);
 
+  const modules = [
+    { icon:'users', title:'Clientes', desc:'Gestiona tu cartera', color:'#3b82f6' },
+    { icon:'calendar-days', title:'Citas', desc:'Agenda y calendario', color:'#10b981' },
+    { icon:'money-bill-wave', title:'Ventas', desc:'POS y historial', color:'#f59e0b' },
+    { icon:'boxes-stacked', title:'Inventario', desc:'Stock y productos', color:'#8b5cf6' },
+  ];
+
   return (
     <div>
       <div style={s.pageHeader}>
@@ -242,39 +258,54 @@ function Dashboard({ token }) {
       </div>
       <div style={s.statsGrid}>
         <div style={s.statCard('#f59e0b')}>
-          <div style={s.statLabel}>Ingresos totales</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'.5rem', marginBottom:'.5rem' }}>
+            <Icon name="dollar-sign" style={{ color:'#f59e0b' }}/>
+            <div style={s.statLabel}>Ingresos totales</div>
+          </div>
           <div style={s.statValue}>${stats.ingresos.toFixed(2)}</div>
           <div style={s.statSub}>{stats.ventas} ventas registradas</div>
         </div>
         <div style={s.statCard('#3b82f6')}>
-          <div style={s.statLabel}>Clientes</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'.5rem', marginBottom:'.5rem' }}>
+            <Icon name="users" style={{ color:'#3b82f6' }}/>
+            <div style={s.statLabel}>Clientes</div>
+          </div>
           <div style={s.statValue}>{stats.clientes}</div>
           <div style={s.statSub}>registrados en el sistema</div>
         </div>
         <div style={s.statCard('#10b981')}>
-          <div style={s.statLabel}>Citas</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'.5rem', marginBottom:'.5rem' }}>
+            <Icon name="calendar-check" style={{ color:'#10b981' }}/>
+            <div style={s.statLabel}>Citas</div>
+          </div>
           <div style={s.statValue}>{stats.citas}</div>
           <div style={s.statSub}>agendadas en total</div>
         </div>
         <div style={s.statCard('#8b5cf6')}>
-          <div style={s.statLabel}>Productos</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'.5rem', marginBottom:'.5rem' }}>
+            <Icon name="boxes-stacked" style={{ color:'#8b5cf6' }}/>
+            <div style={s.statLabel}>Productos</div>
+          </div>
           <div style={s.statValue}>{stats.productos}</div>
           <div style={s.statSub}>en inventario</div>
         </div>
       </div>
       <div style={s.card}>
         <div style={s.cardHeader}>
-          <div style={s.cardTitle}>🚀 ManageX funcionando</div>
-          <span style={s.badge('#10b981','rgba(16,185,129,.1)')}>✓ Conectado a MySQL</span>
+          <div style={{ ...s.cardTitle, display:'flex', alignItems:'center', gap:'.5rem' }}>
+            <Icon name="circle-check" style={{ color:'#10b981' }}/>
+            ManageX funcionando
+          </div>
+          <span style={s.badge('#10b981','rgba(16,185,129,.1)')}>Conectado a MySQL</span>
         </div>
         <div style={s.cardBody}>
           <p style={{ color:'#94a3b8', fontSize:'.9rem', lineHeight:1.7, marginBottom:'1.2rem' }}>
             Sistema operando correctamente. Todos los módulos están conectados a la base de datos MySQL.
           </p>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'1rem' }}>
-            {[['👥','Clientes','Gestiona tu cartera'],['📅','Citas','Agenda y calendario'],['💰','Ventas','POS y historial'],['📦','Inventario','Stock y productos']].map(([icon,title,desc])=>(
+            {modules.map(({icon,title,desc,color})=>(
               <div key={title} style={{ background:'#1c2236', borderRadius:'8px', padding:'1rem', border:'1px solid rgba(255,255,255,.06)' }}>
-                <div style={{ fontSize:'1.3rem', marginBottom:'.4rem' }}>{icon}</div>
+                <div style={{ marginBottom:'.6rem' }}><Icon name={icon} style={{ fontSize:'1.3rem', color }}/></div>
                 <div style={{ fontSize:'.85rem', fontWeight:'600', color:'#f1f5f9', marginBottom:'.2rem' }}>{title}</div>
                 <div style={{ fontSize:'.75rem', color:'#64748b' }}>{desc}</div>
               </div>
@@ -327,7 +358,7 @@ function Clientes({ token }) {
     <div>
       <div style={s.pageHeader}>
         <div><div style={s.pageTitle}>Clientes</div><div style={s.pageSub}>{clientes.length} registrados</div></div>
-        <button style={s.btnPrimary} onClick={abrirNuevo}>+ Nuevo Cliente</button>
+        <button style={s.btnPrimary} onClick={abrirNuevo}><Icon name="user-plus"/> Nuevo Cliente</button>
       </div>
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
@@ -340,7 +371,11 @@ function Clientes({ token }) {
             <tbody>
               {loading ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'2rem'}}>Cargando...</td></tr>
               : clientes.length===0 ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'2rem'}}>
-                  <div style={s.emptyState}><div style={s.emptyIcon}>👥</div><div style={s.emptyTitle}>No hay clientes aún</div><div>Crea tu primer cliente</div></div>
+                  <div style={s.emptyState}>
+                    <div style={s.emptyIcon}><Icon name="users" style={{ fontSize:'2.5rem', color:'#2a3147' }}/></div>
+                    <div style={s.emptyTitle}>No hay clientes aún</div>
+                    <div>Crea tu primer cliente</div>
+                  </div>
                 </td></tr>
               : clientes.map((c,i)=>(
                 <tr key={c.id}>
@@ -352,8 +387,8 @@ function Clientes({ token }) {
                   <td style={s.td}><BadgeEstado estado={c.etiqueta}/></td>
                   <td style={s.td}>
                     <div style={{ display:'flex', gap:'.4rem' }}>
-                      <button style={s.btnSuccess} onClick={()=>abrirEditar(c)}>Editar</button>
-                      <button style={s.btnDanger} onClick={()=>eliminar(c.id)}>Eliminar</button>
+                      <button style={s.btnSuccess} onClick={()=>abrirEditar(c)}><Icon name="pen-to-square"/> Editar</button>
+                      <button style={s.btnDanger} onClick={()=>eliminar(c.id)}><Icon name="trash"/> Eliminar</button>
                     </div>
                   </td>
                 </tr>
@@ -366,8 +401,8 @@ function Clientes({ token }) {
         <div style={s.overlay}>
           <div style={s.modal}>
             <div style={s.modalHeader}>
-              <div style={s.modalTitle}>{editando ? '✏️ Editar Cliente' : '👤 Nuevo Cliente'}</div>
-              <button style={s.btnSmall} onClick={()=>setModal(false)}>✕</button>
+              <div style={s.modalTitle}><Icon name={editando ? 'pen-to-square' : 'user-plus'}/>{editando ? 'Editar Cliente' : 'Nuevo Cliente'}</div>
+              <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
               <div style={s.formGrid}>
@@ -386,8 +421,8 @@ function Clientes({ token }) {
               </div>
             </div>
             <div style={s.modalFooter}>
-              <button style={s.btnSecondary} onClick={()=>setModal(false)}>Cancelar</button>
-              <button style={s.btnPrimary} onClick={guardar}>{editando?'Guardar Cambios':'Crear Cliente'} ✓</button>
+              <button style={s.btnSecondary} onClick={()=>setModal(false)}><Icon name="xmark"/> Cancelar</button>
+              <button style={s.btnPrimary} onClick={guardar}><Icon name="check"/> {editando?'Guardar Cambios':'Crear Cliente'}</button>
             </div>
           </div>
         </div>
@@ -440,7 +475,7 @@ function Citas({ token }) {
     <div>
       <div style={s.pageHeader}>
         <div><div style={s.pageTitle}>Citas</div><div style={s.pageSub}>{citas.length} citas registradas</div></div>
-        <button style={s.btnPrimary} onClick={()=>setModal(true)}>+ Nueva Cita</button>
+        <button style={s.btnPrimary} onClick={()=>setModal(true)}><Icon name="calendar-plus"/> Nueva Cita</button>
       </div>
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
@@ -453,7 +488,11 @@ function Citas({ token }) {
             <tbody>
               {loading ? <tr><td colSpan="8" style={{...s.td,textAlign:'center',padding:'2rem'}}>Cargando...</td></tr>
               : citas.length===0 ? <tr><td colSpan="8" style={{...s.td,textAlign:'center',padding:'2rem'}}>
-                  <div style={s.emptyState}><div style={s.emptyIcon}>📅</div><div style={s.emptyTitle}>No hay citas aún</div><div>Agenda tu primera cita</div></div>
+                  <div style={s.emptyState}>
+                    <div style={s.emptyIcon}><Icon name="calendar-days" style={{ fontSize:'2.5rem', color:'#2a3147' }}/></div>
+                    <div style={s.emptyTitle}>No hay citas aún</div>
+                    <div>Agenda tu primera cita</div>
+                  </div>
                 </td></tr>
               : citas.map((c,i)=>(
                 <tr key={c.id}>
@@ -466,10 +505,10 @@ function Citas({ token }) {
                   <td style={s.td}><BadgeEstado estado={c.estado}/></td>
                   <td style={s.td}>
                     <div style={{ display:'flex', gap:'.35rem', flexWrap:'wrap' }}>
-                      {c.estado==='pendiente' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'confirmada')}>Confirmar</button>}
-                      {c.estado==='confirmada' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'completada')}>Completar</button>}
-                      {c.estado!=='cancelada'&&c.estado!=='completada' && <button style={s.btnDanger} onClick={()=>cambiarEstado(c.id,'cancelada')}>Cancelar</button>}
-                      <button style={s.btnSmall} onClick={()=>eliminar(c.id)}>🗑</button>
+                      {c.estado==='pendiente' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'confirmada')}><Icon name="circle-check"/> Confirmar</button>}
+                      {c.estado==='confirmada' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'completada')}><Icon name="check-double"/> Completar</button>}
+                      {c.estado!=='cancelada'&&c.estado!=='completada' && <button style={s.btnDanger} onClick={()=>cambiarEstado(c.id,'cancelada')}><Icon name="ban"/> Cancelar</button>}
+                      <button style={s.btnSmall} onClick={()=>eliminar(c.id)}><Icon name="trash"/></button>
                     </div>
                   </td>
                 </tr>
@@ -482,8 +521,8 @@ function Citas({ token }) {
         <div style={s.overlay}>
           <div style={s.modal}>
             <div style={s.modalHeader}>
-              <div style={s.modalTitle}>📅 Nueva Cita</div>
-              <button style={s.btnSmall} onClick={()=>setModal(false)}>✕</button>
+              <div style={s.modalTitle}><Icon name="calendar-plus"/> Nueva Cita</div>
+              <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
               <div style={s.formGrid}>
@@ -508,8 +547,8 @@ function Citas({ token }) {
               </div>
             </div>
             <div style={s.modalFooter}>
-              <button style={s.btnSecondary} onClick={()=>setModal(false)}>Cancelar</button>
-              <button style={s.btnPrimary} onClick={guardar}>Agendar Cita ✓</button>
+              <button style={s.btnSecondary} onClick={()=>setModal(false)}><Icon name="xmark"/> Cancelar</button>
+              <button style={s.btnPrimary} onClick={guardar}><Icon name="check"/> Agendar Cita</button>
             </div>
           </div>
         </div>
@@ -576,7 +615,7 @@ function Ventas({ token }) {
     <div>
       <div style={s.pageHeader}>
         <div><div style={s.pageTitle}>Ventas</div><div style={s.pageSub}>{ventas.length} ventas registradas</div></div>
-        <button style={s.btnPrimary} onClick={()=>setModal(true)}>+ Nueva Venta</button>
+        <button style={s.btnPrimary} onClick={()=>setModal(true)}><Icon name="plus"/> Nueva Venta</button>
       </div>
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
@@ -589,7 +628,11 @@ function Ventas({ token }) {
             <tbody>
               {loading ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'2rem'}}>Cargando...</td></tr>
               : ventas.length===0 ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'2rem'}}>
-                  <div style={s.emptyState}><div style={s.emptyIcon}>💰</div><div style={s.emptyTitle}>No hay ventas aún</div><div>Registra tu primera venta</div></div>
+                  <div style={s.emptyState}>
+                    <div style={s.emptyIcon}><Icon name="money-bill-wave" style={{ fontSize:'2.5rem', color:'#2a3147' }}/></div>
+                    <div style={s.emptyTitle}>No hay ventas aún</div>
+                    <div>Registra tu primera venta</div>
+                  </div>
                 </td></tr>
               : ventas.map((v,i)=>(
                 <tr key={v.id}>
@@ -610,8 +653,8 @@ function Ventas({ token }) {
         <div style={s.overlay}>
           <div style={s.modalLg}>
             <div style={s.modalHeader}>
-              <div style={s.modalTitle}>💰 Nueva Venta</div>
-              <button style={s.btnSmall} onClick={()=>setModal(false)}>✕</button>
+              <div style={s.modalTitle}><Icon name="money-bill-wave"/> Nueva Venta</div>
+              <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
               <div style={s.formGrid}>
@@ -623,20 +666,20 @@ function Ventas({ token }) {
                 </div>
                 <div style={s.field}><label style={s.label}>Método de Pago</label>
                   <select style={s.select} value={form.metodo_pago} onChange={e=>setForm({...form,metodo_pago:e.target.value})}>
-                    <option value="efectivo">💵 Efectivo</option>
-                    <option value="tarjeta">💳 Tarjeta</option>
-                    <option value="transferencia">📱 Transferencia</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
                   </select>
                 </div>
               </div>
               <div style={s.divider}/>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'.75rem' }}>
                 <div style={{ fontSize:'.82rem', fontWeight:'700', color:'#f1f5f9' }}>Productos</div>
-                <button style={s.btnSmall} onClick={agregarItem}>+ Agregar producto</button>
+                <button style={s.btnSmall} onClick={agregarItem}><Icon name="plus"/> Agregar producto</button>
               </div>
               {form.items.length===0 ? (
                 <div style={{ textAlign:'center', padding:'1.5rem', color:'#64748b', background:'#1c2236', borderRadius:'8px', fontSize:'.85rem' }}>
-                  Haz clic en "+ Agregar producto" para comenzar
+                  Haz clic en "Agregar producto" para comenzar
                 </div>
               ) : form.items.map((item,i)=>(
                 <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', gap:'.75rem', alignItems:'end', marginBottom:'.5rem', background:'#1c2236', borderRadius:'8px', padding:'.75rem' }}>
@@ -655,7 +698,7 @@ function Ventas({ token }) {
                     <label style={{...s.label,fontSize:'.62rem'}}>Precio</label>
                     <input style={{...s.input,width:'90px'}} type="number" value={item.precio_unit} onInput={e=>actualizarItem(i,'precio_unit',parseFloat(e.target.value)||0)}/>
                   </div>
-                  <button style={s.btnDanger} onClick={()=>quitarItem(i)}>✕</button>
+                  <button style={s.btnDanger} onClick={()=>quitarItem(i)}><Icon name="xmark"/></button>
                 </div>
               ))}
               <div style={s.divider}/>
@@ -671,8 +714,8 @@ function Ventas({ token }) {
               </div>
             </div>
             <div style={s.modalFooter}>
-              <button style={s.btnSecondary} onClick={()=>setModal(false)}>Cancelar</button>
-              <button style={s.btnPrimary} onClick={guardar}>Registrar Venta — ${total.toFixed(2)} ✓</button>
+              <button style={s.btnSecondary} onClick={()=>setModal(false)}><Icon name="xmark"/> Cancelar</button>
+              <button style={s.btnPrimary} onClick={guardar}><Icon name="check"/> Registrar Venta — ${total.toFixed(2)}</button>
             </div>
           </div>
         </div>
@@ -724,11 +767,11 @@ function Inventario({ token }) {
     <div>
       <div style={s.pageHeader}>
         <div><div style={s.pageTitle}>Inventario</div><div style={s.pageSub}>{productos.length} productos · {stockBajo.length} con stock bajo</div></div>
-        <button style={s.btnPrimary} onClick={abrirNuevo}>+ Nuevo Producto</button>
+        <button style={s.btnPrimary} onClick={abrirNuevo}><Icon name="plus"/> Nuevo Producto</button>
       </div>
       {stockBajo.length>0 && (
         <div style={{ background:'rgba(239,68,68,.07)', border:'1px solid rgba(239,68,68,.2)', borderRadius:'10px', padding:'1rem 1.2rem', marginBottom:'1.2rem', display:'flex', alignItems:'center', gap:'.75rem' }}>
-          <span style={{ fontSize:'1.2rem' }}>⚠️</span>
+          <Icon name="triangle-exclamation" style={{ color:'#ef4444', fontSize:'1.2rem' }}/>
           <div>
             <div style={{ fontSize:'.85rem', fontWeight:'600', color:'#ef4444' }}>{stockBajo.length} productos con stock crítico</div>
             <div style={{ fontSize:'.78rem', color:'#94a3b8' }}>{stockBajo.map(p=>p.nombre).join(', ')}</div>
@@ -746,7 +789,11 @@ function Inventario({ token }) {
             <tbody>
               {loading ? <tr><td colSpan="9" style={{...s.td,textAlign:'center',padding:'2rem'}}>Cargando...</td></tr>
               : productos.length===0 ? <tr><td colSpan="9" style={{...s.td,textAlign:'center',padding:'2rem'}}>
-                  <div style={s.emptyState}><div style={s.emptyIcon}>📦</div><div style={s.emptyTitle}>No hay productos aún</div><div>Agrega tu primer producto</div></div>
+                  <div style={s.emptyState}>
+                    <div style={s.emptyIcon}><Icon name="boxes-stacked" style={{ fontSize:'2.5rem', color:'#2a3147' }}/></div>
+                    <div style={s.emptyTitle}>No hay productos aún</div>
+                    <div>Agrega tu primer producto</div>
+                  </div>
                 </td></tr>
               : productos.map(p=>(
                 <tr key={p.id}>
@@ -771,8 +818,8 @@ function Inventario({ token }) {
                   </td>
                   <td style={s.td}>
                     <div style={{ display:'flex', gap:'.4rem' }}>
-                      <button style={s.btnSuccess} onClick={()=>abrirEditar(p)}>Editar</button>
-                      <button style={s.btnDanger} onClick={()=>eliminar(p.id)}>Eliminar</button>
+                      <button style={s.btnSuccess} onClick={()=>abrirEditar(p)}><Icon name="pen-to-square"/> Editar</button>
+                      <button style={s.btnDanger} onClick={()=>eliminar(p.id)}><Icon name="trash"/> Eliminar</button>
                     </div>
                   </td>
                 </tr>
@@ -785,8 +832,8 @@ function Inventario({ token }) {
         <div style={s.overlay}>
           <div style={s.modal}>
             <div style={s.modalHeader}>
-              <div style={s.modalTitle}>{editando?'✏️ Editar Producto':'📦 Nuevo Producto'}</div>
-              <button style={s.btnSmall} onClick={()=>setModal(false)}>✕</button>
+              <div style={s.modalTitle}><Icon name={editando ? 'pen-to-square' : 'boxes-stacked'}/>{editando ? 'Editar Producto' : 'Nuevo Producto'}</div>
+              <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
               <div style={s.formGrid}>
@@ -807,8 +854,8 @@ function Inventario({ token }) {
               </div>
             </div>
             <div style={s.modalFooter}>
-              <button style={s.btnSecondary} onClick={()=>setModal(false)}>Cancelar</button>
-              <button style={s.btnPrimary} onClick={guardar}>{editando?'Guardar Cambios':'Crear Producto'} ✓</button>
+              <button style={s.btnSecondary} onClick={()=>setModal(false)}><Icon name="xmark"/> Cancelar</button>
+              <button style={s.btnPrimary} onClick={guardar}><Icon name="check"/> {editando?'Guardar Cambios':'Crear Producto'}</button>
             </div>
           </div>
         </div>
@@ -830,11 +877,11 @@ export function App() {
   if (!usuario) return <Login onLogin={setUsuario}/>;
 
   const navItems = [
-    { id:'dashboard',  icon:'📊', label:'Dashboard' },
-    { id:'clientes',   icon:'👥', label:'Clientes' },
-    { id:'citas',      icon:'📅', label:'Citas' },
-    { id:'ventas',     icon:'💰', label:'Ventas' },
-    { id:'inventario', icon:'📦', label:'Inventario' },
+    { id:'dashboard',  icon:'chart-pie',     label:'Dashboard' },
+    { id:'clientes',   icon:'users',          label:'Clientes' },
+    { id:'citas',      icon:'calendar-days',  label:'Citas' },
+    { id:'ventas',     icon:'money-bill-wave',label:'Ventas' },
+    { id:'inventario', icon:'boxes-stacked',  label:'Inventario' },
   ];
 
   return (
@@ -847,7 +894,8 @@ export function App() {
         <nav style={{ flex:1, padding:'.75rem 0', overflowY:'auto' }}>
           {navItems.map(item=>(
             <div key={item.id} style={s.navItem(pagina===item.id)} onClick={()=>setPagina(item.id)}>
-              <span>{item.icon}</span><span>{item.label}</span>
+              <Icon name={item.icon} style={{ fontSize:'0.85rem', width:'16px', textAlign:'center' }}/>
+              <span>{item.label}</span>
             </div>
           ))}
         </nav>
@@ -861,13 +909,15 @@ export function App() {
               <div style={{ fontSize:'.7rem', color:'#64748b' }}>{usuario.rol}</div>
             </div>
           </div>
-          <button style={{ ...s.btnSecondary, width:'100%', fontSize:'.78rem', padding:'.5rem' }} onClick={logout}>Cerrar Sesión</button>
+          <button style={{ ...s.btnSecondary, width:'100%', fontSize:'.78rem', padding:'.5rem', justifyContent:'center' }} onClick={logout}>
+            <Icon name="right-from-bracket"/> Cerrar Sesión
+          </button>
         </div>
       </aside>
       <div style={s.main}>
         <div style={s.topbar}>
           <div style={s.topbarTitle}>
-            {navItems.find(n=>n.id===pagina)?.icon}
+            <Icon name={navItems.find(n=>n.id===pagina)?.icon} style={{ color:'#f59e0b' }}/>
             <span style={{ marginLeft:'.4rem' }}>{navItems.find(n=>n.id===pagina)?.label}</span>
           </div>
           <div style={{ fontSize:'.82rem', color:'#64748b' }}>ManageX v1.0</div>
