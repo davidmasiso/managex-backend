@@ -5,7 +5,10 @@ require('dotenv').config();
 require('./config/database');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://managex-system.vercel.app',
+  credentials: true
+}));
 app.use(express.json());
 
 const authRouter       = require('./routes/auth');

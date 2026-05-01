@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'preact/hooks';
 import axios from 'axios';
 
-const API = 'http://localhost:3001/api';
+const API = 'https://managex-backend-production.up.railway.app/api';
 
 // ══════════════════════════════════════
 // DESIGN TOKENS
