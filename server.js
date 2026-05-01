@@ -11,10 +11,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const authRouter       = require('./routes/auth');
-const clientesRouter   = require('./routes/clientes');
-const citasRouter      = require('./routes/citas');
-const ventasRouter     = require('./routes/ventas');
+const authRouter      = require('./routes/auth');
+const clientesRouter  = require('./routes/clientes');
+const citasRouter     = require('./routes/citas');
+const ventasRouter    = require('./routes/ventas');
 const inventarioRouter = require('./routes/inventario');
 
 app.use('/api/auth',       authRouter);
@@ -31,6 +31,6 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 ManageX corriendo en http://localhost:${PORT}`);
 });
