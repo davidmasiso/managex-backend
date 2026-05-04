@@ -47,15 +47,24 @@ router.post('/', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PUT — actualizar estado
+// PUT — actualizar
 router.put('/:id', async (req, res) => {
   try {
-    const { estado, notas, fecha, hora_inicio } = req.body;
+    const campos = [];
+    const valores = [];
+
+    if (req.body.estado !== undefined)      { campos.push('estado=?');      valores.push(req.body.estado); }
+    if (req.body.notas !== undefined)       { campos.push('notas=?');       valores.push(req.body.notas); }
+    if (req.body.fecha !== undefined)       { campos.push('fecha=?');       valores.push(req.body.fecha); }
+    if (req.body.hora_inicio !== undefined) { campos.push('hora_inicio=?'); valores.push(req.body.hora_inicio); }
+
+    if (campos.length === 0) return res.status(400).json({ error: 'Nada que actualizar' });
+
+    valores.push(req.params.id, req.user.negocio_id);
+
     await db.query(
-      `UPDATE citas SET estado=?,notas=?,fecha=?,hora_inicio=?
-       WHERE id=? AND negocio_id=?`,
-      [estado, notas, fecha, hora_inicio,
-       req.params.id, req.user.negocio_id]
+      `UPDATE citas SET ${campos.join(',')} WHERE id=? AND negocio_id=?`,
+      valores
     );
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
