@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'preact/hooks';
 import axios from 'axios';
 
+// ManageX v1.1 - forgot password
 const API = 'https://managex-backend-production-ec28.up.railway.app/api';
 
 const Icon = ({ name, style: x = {} }) => (
   <i className={`fa-solid fa-${name}`} style={{ lineHeight:1, ...x }} />
 );
 
-// ══════════════════════════════════════
-// LOGO SVG
-// ══════════════════════════════════════
 const LogoHex = ({ size = 40 }) => (
   <svg width={size} height={size} viewBox="0 0 56 56" fill="none" style={{ filter:'drop-shadow(0 0 14px rgba(245,166,35,0.35))' }}>
     <defs>
@@ -29,9 +27,6 @@ const LogoHex = ({ size = 40 }) => (
   </svg>
 );
 
-// ══════════════════════════════════════
-// TOKENS
-// ══════════════════════════════════════
 const C = {
   gold: '#F5A623', gold2: '#FF6B35',
   dark: '#080C14', dark2: '#0D1220', dark3: '#111827',
@@ -56,7 +51,7 @@ const s = {
   avatar: { width:'30px', height:'30px', minWidth:'30px', borderRadius:'50%', background:`linear-gradient(135deg, ${C.gold}, ${C.gold2})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'.75rem', fontWeight:'700', color:C.dark },
   userName: { fontSize:'.8rem', fontWeight:'600', color:C.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
   userRole: { fontSize:'.65rem', color:C.textMuted, textTransform:'capitalize' },
-  btnLogout: { display:'flex', alignItems:'center', justifyContent:'center', gap:'.4rem', width:'100%', padding:'.5rem', background:'transparent', border:`1px solid ${C.border}`, borderRadius:'8px', color:C.textSub, fontSize:'.75rem', fontWeight:'500', cursor:'pointer', transition:'all .15s' },
+  btnLogout: { display:'flex', alignItems:'center', justifyContent:'center', gap:'.4rem', width:'100%', padding:'.5rem', background:'transparent', border:`1px solid ${C.border}`, borderRadius:'8px', color:C.textSub, fontSize:'.75rem', fontWeight:'500', cursor:'pointer' },
   main: { flex:1, display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', minWidth:0, background:C.dark3 },
   topbar: { height:'56px', minHeight:'56px', background:C.surface, borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 1.75rem', flexShrink:0 },
   topbarLeft: { display:'flex', alignItems:'center', gap:'.6rem' },
@@ -78,10 +73,10 @@ const s = {
   statLabel: { fontSize:'.68rem', fontWeight:'600', color:C.textMuted, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:'.3rem' },
   statValue: { fontFamily:"'Syne', sans-serif", fontSize:'1.8rem', fontWeight:'800', color:C.text, lineHeight:1, letterSpacing:'-0.02em' },
   statSub: { fontSize:'.72rem', color:C.textMuted, marginTop:'.3rem' },
-  btnPrimary: { background:`linear-gradient(135deg, ${C.gold}, ${C.gold2})`, color:C.dark, border:'none', borderRadius:'9px', padding:'.6rem 1.2rem', fontSize:'.82rem', fontWeight:'700', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem', fontFamily:"'DM Sans', sans-serif", boxShadow:`0 4px 16px rgba(245,166,35,0.2)`, transition:'all .15s' },
-  btnSecondary: { background:C.surface2, color:C.text, border:`1px solid ${C.border2}`, borderRadius:'9px', padding:'.6rem 1.2rem', fontSize:'.82rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem', transition:'all .15s' },
-  btnDanger: { background:'rgba(239,68,68,0.08)', color:C.red, border:`1px solid rgba(239,68,68,0.2)`, borderRadius:'8px', padding:'.38rem .85rem', fontSize:'.75rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.35rem', transition:'all .15s' },
-  btnSuccess: { background:'rgba(16,185,129,0.08)', color:C.green, border:`1px solid rgba(16,185,129,0.2)`, borderRadius:'8px', padding:'.38rem .85rem', fontSize:'.75rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.35rem', transition:'all .15s' },
+  btnPrimary: { background:`linear-gradient(135deg, ${C.gold}, ${C.gold2})`, color:C.dark, border:'none', borderRadius:'9px', padding:'.6rem 1.2rem', fontSize:'.82rem', fontWeight:'700', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem', fontFamily:"'DM Sans', sans-serif", boxShadow:`0 4px 16px rgba(245,166,35,0.2)` },
+  btnSecondary: { background:C.surface2, color:C.text, border:`1px solid ${C.border2}`, borderRadius:'9px', padding:'.6rem 1.2rem', fontSize:'.82rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.4rem' },
+  btnDanger: { background:'rgba(239,68,68,0.08)', color:C.red, border:`1px solid rgba(239,68,68,0.2)`, borderRadius:'8px', padding:'.38rem .85rem', fontSize:'.75rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.35rem' },
+  btnSuccess: { background:'rgba(16,185,129,0.08)', color:C.green, border:`1px solid rgba(16,185,129,0.2)`, borderRadius:'8px', padding:'.38rem .85rem', fontSize:'.75rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.35rem' },
   btnSmall: { background:C.surface2, color:C.textSub, border:`1px solid ${C.border}`, borderRadius:'7px', padding:'.3rem .65rem', fontSize:'.73rem', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.3rem' },
   btnBlue: { background:'rgba(59,130,246,0.08)', color:C.blue, border:`1px solid rgba(59,130,246,0.2)`, borderRadius:'8px', padding:'.38rem .85rem', fontSize:'.75rem', fontWeight:'600', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:'.35rem' },
   table: { width:'100%', borderCollapse:'collapse' },
@@ -98,14 +93,14 @@ const s = {
   formGrid: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem' },
   field: { display:'flex', flexDirection:'column', gap:'.35rem' },
   label: { fontSize:'.67rem', fontWeight:'600', color:C.textSub, textTransform:'uppercase', letterSpacing:'.08em' },
-  input: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'9px', padding:'.65rem .9rem', fontSize:'.88rem', color:C.text, outline:'none', width:'100%', fontFamily:"'DM Sans', sans-serif", transition:'border-color .15s' },
+  input: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'9px', padding:'.65rem .9rem', fontSize:'.88rem', color:C.text, outline:'none', width:'100%', fontFamily:"'DM Sans', sans-serif" },
   select: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'9px', padding:'.65rem .9rem', fontSize:'.88rem', color:C.text, outline:'none', width:'100%', fontFamily:"'DM Sans', sans-serif" },
   textarea: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'9px', padding:'.65rem .9rem', fontSize:'.88rem', color:C.text, outline:'none', width:'100%', resize:'vertical', minHeight:'80px', fontFamily:"'DM Sans', sans-serif" },
   divider: { height:'1px', background:C.border, margin:'1rem 0' },
   emptyState: { textAlign:'center', padding:'3rem 1.5rem' },
   emptyTitle: { fontSize:'.9rem', fontWeight:'600', color:C.textSub, marginTop:'.75rem', marginBottom:'.3rem' },
   emptyDesc: { fontSize:'.78rem', color:C.textMuted },
-  loginInput: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'10px', padding:'.7rem 1rem', fontSize:'.9rem', color:C.text, outline:'none', width:'100%', fontFamily:"'DM Sans', sans-serif", transition:'border-color .2s, box-shadow .2s' },
+  loginInput: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'10px', padding:'.7rem 1rem', fontSize:'.9rem', color:C.text, outline:'none', width:'100%', fontFamily:"'DM Sans', sans-serif" },
   loginLabel: { fontSize:'.67rem', fontWeight:'600', color:C.textSub, textTransform:'uppercase', letterSpacing:'.1em' },
 };
 
@@ -125,10 +120,133 @@ const BadgeEstado = ({ estado }) => {
 };
 
 // ══════════════════════════════════════
+// FORGOT PASSWORD
+// ══════════════════════════════════════
+function ForgotPassword({ onVolver }) {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [exito, setExito] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    if (!email) { setError('Ingresa tu email'); return; }
+    setLoading(true); setError('');
+    try {
+      await axios.post(`${API}/email/forgot-password`, { email });
+      setExito('Si el email existe, recibirás instrucciones para restablecer tu contraseña.');
+    } catch (e) {
+      setError('Error al enviar el email. Intenta de nuevo.');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ width:'100%', maxWidth:'360px' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'2rem' }}>
+        <LogoHex size={40}/>
+        <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.3rem', fontWeight:'800', color:C.text }}>
+          Manage<span style={{ background:`linear-gradient(135deg,${C.gold},${C.gold2})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>X</span>
+        </div>
+      </div>
+      <div style={{ marginBottom:'1.5rem' }}>
+        <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.4rem', fontWeight:'800', color:C.text, letterSpacing:'-0.02em' }}>¿Olvidaste tu contraseña?</div>
+        <div style={{ fontSize:'.82rem', color:C.textMuted, marginTop:'.4rem' }}>Ingresa tu email y te enviaremos un enlace para restablecerla.</div>
+      </div>
+
+      {exito && <div style={{ color:C.green, fontSize:'.82rem', background:'rgba(16,185,129,0.08)', padding:'.75rem 1rem', borderRadius:'9px', marginBottom:'1rem', border:'1px solid rgba(16,185,129,0.2)', display:'flex', alignItems:'center', gap:'.5rem' }}><Icon name="circle-check"/> {exito}</div>}
+      {error && <div style={{ color:C.red, fontSize:'.82rem', background:'rgba(239,68,68,0.08)', padding:'.75rem 1rem', borderRadius:'9px', marginBottom:'1rem', border:'1px solid rgba(239,68,68,0.2)', display:'flex', alignItems:'center', gap:'.5rem' }}><Icon name="circle-exclamation"/> {error}</div>}
+
+      {!exito && (
+        <>
+          <div style={{ ...s.field, marginBottom:'1rem' }}>
+            <label style={s.loginLabel}>Email</label>
+            <input style={s.loginInput} type="email" value={email} onInput={e=>setEmail(e.target.value)} placeholder="tu@empresa.com" onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
+          </div>
+          <button style={{ ...s.btnPrimary, width:'100%', justifyContent:'center', padding:'.85rem', fontSize:'.9rem', borderRadius:'10px', marginBottom:'1rem' }} onClick={handleSubmit}>
+            <Icon name="paper-plane"/> {loading ? 'Enviando...' : 'Enviar instrucciones'}
+          </button>
+        </>
+      )}
+
+      <div style={{ textAlign:'center', fontSize:'.78rem', color:C.textMuted }}>
+        <span style={{ color:C.gold, cursor:'pointer', fontWeight:'600' }} onClick={onVolver}>← Volver al inicio de sesión</span>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════
+// RESET PASSWORD
+// ══════════════════════════════════════
+function ResetPassword({ token, onVolver }) {
+  const [password, setPassword] = useState('');
+  const [confirmar, setConfirmar] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [exito, setExito] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    if (!password || !confirmar) { setError('Completa todos los campos'); return; }
+    if (password !== confirmar) { setError('Las contraseñas no coinciden'); return; }
+    if (password.length < 6) { setError('La contraseña debe tener mínimo 6 caracteres'); return; }
+    setLoading(true); setError('');
+    try {
+      await axios.post(`${API}/email/reset-password`, { token, password });
+      setExito('¡Contraseña actualizada! Ya puedes iniciar sesión.');
+    } catch (e) {
+      setError(e.response?.data?.error || 'Token inválido o expirado');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ width:'100%', maxWidth:'360px' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'2rem' }}>
+        <LogoHex size={40}/>
+        <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.3rem', fontWeight:'800', color:C.text }}>
+          Manage<span style={{ background:`linear-gradient(135deg,${C.gold},${C.gold2})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>X</span>
+        </div>
+      </div>
+      <div style={{ marginBottom:'1.5rem' }}>
+        <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.4rem', fontWeight:'800', color:C.text, letterSpacing:'-0.02em' }}>Nueva contraseña</div>
+        <div style={{ fontSize:'.82rem', color:C.textMuted, marginTop:'.4rem' }}>Elige una contraseña segura para tu cuenta.</div>
+      </div>
+
+      {exito && <div style={{ color:C.green, fontSize:'.82rem', background:'rgba(16,185,129,0.08)', padding:'.75rem 1rem', borderRadius:'9px', marginBottom:'1rem', border:'1px solid rgba(16,185,129,0.2)', display:'flex', alignItems:'center', gap:'.5rem' }}><Icon name="circle-check"/> {exito}</div>}
+      {error && <div style={{ color:C.red, fontSize:'.82rem', background:'rgba(239,68,68,0.08)', padding:'.75rem 1rem', borderRadius:'9px', marginBottom:'1rem', border:'1px solid rgba(239,68,68,0.2)', display:'flex', alignItems:'center', gap:'.5rem' }}><Icon name="circle-exclamation"/> {error}</div>}
+
+      {!exito && (
+        <div style={{ display:'flex', flexDirection:'column', gap:'.9rem' }}>
+          <div style={s.field}>
+            <label style={s.loginLabel}>Nueva contraseña</label>
+            <input style={s.loginInput} type="password" value={password} onInput={e=>setPassword(e.target.value)} placeholder="••••••••"/>
+          </div>
+          <div style={s.field}>
+            <label style={s.loginLabel}>Confirmar contraseña</label>
+            <input style={s.loginInput} type="password" value={confirmar} onInput={e=>setConfirmar(e.target.value)} placeholder="••••••••"/>
+          </div>
+          <button style={{ ...s.btnPrimary, width:'100%', justifyContent:'center', padding:'.85rem', fontSize:'.9rem', borderRadius:'10px' }} onClick={handleSubmit}>
+            <Icon name="lock"/> {loading ? 'Actualizando...' : 'Actualizar contraseña'}
+          </button>
+        </div>
+      )}
+
+      {exito && (
+        <div style={{ textAlign:'center', marginTop:'1rem' }}>
+          <span style={{ color:C.gold, cursor:'pointer', fontWeight:'600', fontSize:'.78rem' }} onClick={onVolver}>Ir al inicio de sesión →</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════
 function Login({ onLogin }) {
   const [tab, setTab] = useState('login');
+  const [vista, setVista] = useState('login'); // login | forgot | reset
+  const [resetToken, setResetToken] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nombre, setNombre] = useState('');
@@ -136,6 +254,17 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Detectar token en URL para reset password
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const path = window.location.pathname;
+    if (token && path.includes('reset-password')) {
+      setResetToken(token);
+      setVista('reset');
+    }
+  }, []);
 
   const cambiarTab = (t) => { setTab(t); setError(''); setExito(''); };
 
@@ -156,11 +285,27 @@ function Login({ onLogin }) {
     setLoading(true); setError('');
     try {
       await axios.post(`${API}/auth/registro`, { nombre_negocio:negocio, nombre, email, password });
-      setExito('¡Cuenta creada! Ya puedes iniciar sesión.');
+      // Enviar email de verificación
+      try { await axios.post(`${API}/email/verificar-email`, { email }); } catch(e) {}
+      setExito('¡Cuenta creada! Revisa tu correo para verificar tu email.');
       setTab('login'); setEmail(email); setPassword('');
     } catch (e) { setError(e.response?.data?.error||'Error al registrarse'); }
     setLoading(false);
   };
+
+  if (vista === 'forgot') return (
+    <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
+      <ForgotPassword onVolver={() => setVista('login')}/>
+    </div>
+  );
+
+  if (vista === 'reset') return (
+    <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
+      <ResetPassword token={resetToken} onVolver={() => setVista('login')}/>
+    </div>
+  );
 
   return (
     <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', position:'relative', overflow:'hidden' }}>
@@ -175,7 +320,7 @@ function Login({ onLogin }) {
             <LogoHex size={48}/>
             <div>
               <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.5rem', fontWeight:'800', letterSpacing:'-0.03em', color:C.text }}>
-                Manage<span style={{ background:`linear-gradient(135deg, ${C.gold}, ${C.gold2})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>X</span>
+                Manage<span style={{ background:`linear-gradient(135deg,${C.gold},${C.gold2})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>X</span>
               </div>
               <div style={{ fontSize:'.72rem', color:C.textMuted, letterSpacing:'.08em', textTransform:'uppercase', fontWeight:'500' }}>Sistema de Gestión</div>
             </div>
@@ -204,8 +349,17 @@ function Login({ onLogin }) {
           {tab==='login' ? (
             <div style={{ display:'flex', flexDirection:'column', gap:'.9rem' }}>
               <div style={s.field}><label style={s.loginLabel}>Email</label><input style={s.loginInput} type="email" value={email} onInput={e=>setEmail(e.target.value)} placeholder="tu@empresa.com"/></div>
-              <div style={s.field}><label style={s.loginLabel}>Contraseña</label><input style={s.loginInput} type="password" value={password} onInput={e=>setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&handleLogin()}/></div>
-              <button style={{ ...s.btnPrimary, width:'100%', justifyContent:'center', padding:'.85rem', fontSize:'.9rem', marginTop:'.25rem', borderRadius:'10px' }} onClick={handleLogin}>
+              <div style={s.field}>
+                <label style={s.loginLabel}>Contraseña</label>
+                <input style={s.loginInput} type="password" value={password} onInput={e=>setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
+              </div>
+              {/* FORGOT PASSWORD LINK */}
+              <div style={{ textAlign:'right', marginTop:'-.4rem' }}>
+                <span style={{ fontSize:'.75rem', color:C.gold, cursor:'pointer', fontWeight:'500' }} onClick={()=>setVista('forgot')}>
+                  ¿Olvidaste tu contraseña?
+                </span>
+              </div>
+              <button style={{ ...s.btnPrimary, width:'100%', justifyContent:'center', padding:'.85rem', fontSize:'.9rem', borderRadius:'10px' }} onClick={handleLogin}>
                 <Icon name="right-to-bracket"/> {loading?'Iniciando...':'Iniciar Sesión'}
               </button>
               <div style={{ textAlign:'center', fontSize:'.76rem', color:C.textMuted }}>¿No tienes cuenta? <span style={{ color:C.gold, cursor:'pointer', fontWeight:'600' }} onClick={()=>cambiarTab('registro')}>Regístrate gratis</span></div>
@@ -354,7 +508,7 @@ function Clientes({ token }) {
                   <td style={{...s.td,color:C.textMuted,fontFamily:'monospace',fontSize:'.75rem'}}>{i+1}</td>
                   <td style={s.td}>
                     <div style={{ display:'flex', alignItems:'center', gap:'.7rem' }}>
-                      <div style={{ width:'30px', height:'30px', minWidth:'30px', borderRadius:'50%', background:`linear-gradient(135deg, ${C.blue}, ${C.purple})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'.72rem', fontWeight:'700', color:'white' }}>{c.nombre?.charAt(0)}{c.apellido?.charAt(0)}</div>
+                      <div style={{ width:'30px', height:'30px', minWidth:'30px', borderRadius:'50%', background:`linear-gradient(135deg,${C.blue},${C.purple})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'.72rem', fontWeight:'700', color:'white' }}>{c.nombre?.charAt(0)}{c.apellido?.charAt(0)}</div>
                       <div><div style={{ fontSize:'.83rem', fontWeight:'600', color:C.text }}>{c.nombre} {c.apellido}</div><div style={{ fontSize:'.72rem', color:C.textMuted }}>{c.email||'Sin email'}</div></div>
                     </div>
                   </td>
@@ -628,7 +782,7 @@ function Inventario({ token }) {
                   <td style={s.td}><span style={s.badge(p.tipo==='servicio'?C.purple:C.blue,p.tipo==='servicio'?'rgba(139,92,246,0.1)':'rgba(59,130,246,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:p.tipo==='servicio'?C.purple:C.blue,display:'inline-block' }}/>{p.tipo}</span></td>
                   <td style={{...s.td,fontFamily:'monospace',fontWeight:'700',color:C.gold}}>${parseFloat(p.precio_venta||0).toFixed(2)}</td>
                   <td style={{...s.td,fontFamily:'monospace'}}>${parseFloat(p.precio_costo||0).toFixed(2)}</td>
-                  <td style={s.td}>{p.tipo==='servicio'?<span style={{ color:C.textMuted }}>—</span>:<span style={{ color:p.stock_actual<=p.stock_minimo?C.red:C.green, fontWeight:'700', fontSize:'.82rem' }}>{p.stock_actual} <span style={{ color:C.textMuted,fontWeight:'400',fontSize:'.7rem' }}>/ {p.stock_minimo}</span></span>}</td>
+                  <td style={s.td}>{p.tipo==='servicio'?<span style={{ color:C.textMuted }}>—</span>:<span style={{ color:p.stock_actual<=p.stock_minimo?C.red:C.green,fontWeight:'700',fontSize:'.82rem' }}>{p.stock_actual} <span style={{ color:C.textMuted,fontWeight:'400',fontSize:'.7rem' }}>/ {p.stock_minimo}</span></span>}</td>
                   <td style={s.td}>
                     {p.tipo==='servicio'?<span style={s.badge(C.purple,'rgba(139,92,246,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.purple,display:'inline-block' }}/>Servicio</span>
                     :p.stock_actual<=0?<span style={s.badge(C.red,'rgba(239,68,68,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.red,display:'inline-block' }}/>Agotado</span>
@@ -681,12 +835,17 @@ function Inventario({ token }) {
 // ══════════════════════════════════════
 export function App() {
   const [usuario, setUsuario] = useState(()=>{ const u=localStorage.getItem('usuario'); return u?JSON.parse(u):null; });
-  const [token] = useState(()=>localStorage.getItem('token')||'');
+  const [token, setToken] = useState(()=>localStorage.getItem('token')||'');
   const [pagina, setPagina] = useState('dashboard');
 
-  const logout = () => { localStorage.clear(); setUsuario(null); };
-  if (!usuario) return <Login onLogin={setUsuario}/>;
+  const logout = () => { localStorage.clear(); setUsuario(null); setToken(''); };
 
+  const handleLogin = (usr) => {
+    setUsuario(usr);
+    setToken(localStorage.getItem('token')||'');
+  };
+
+  if (!usuario) return <Login onLogin={handleLogin}/>;
   const navItems = [
     { id:'dashboard',  icon:'chart-pie',      label:'Dashboard' },
     { id:'clientes',   icon:'users',           label:'Clientes' },
