@@ -36,6 +36,17 @@ const C = {
   green: '#10B981', blue: '#3B82F6', purple: '#8B5CF6', red: '#EF4444',
 };
 
+// Hook para detectar mobile
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
+};
+
 const s = {
   app: { display:'flex', width:'100vw', height:'100vh', overflow:'hidden', background:C.dark, fontFamily:"'DM Sans', sans-serif" },
   sidebar: { width:'240px', minWidth:'240px', background:C.surface, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', height:'100vh', position:'relative' },
@@ -245,7 +256,7 @@ function ResetPassword({ token, onVolver }) {
 // ══════════════════════════════════════
 function Login({ onLogin }) {
   const [tab, setTab] = useState('login');
-  const [vista, setVista] = useState('login'); // login | forgot | reset
+  const [vista, setVista] = useState('login');
   const [resetToken, setResetToken] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -254,8 +265,8 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
   const [loading, setLoading] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Detectar token en URL para reset password
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
@@ -285,7 +296,6 @@ function Login({ onLogin }) {
     setLoading(true); setError('');
     try {
       await axios.post(`${API}/auth/registro`, { nombre_negocio:negocio, nombre, email, password });
-      // Enviar email de verificación
       try { await axios.post(`${API}/email/verificar-email`, { email }); } catch(e) {}
       setExito('¡Cuenta creada! Revisa tu correo para verificar tu email.');
       setTab('login'); setEmail(email); setPassword('');
@@ -294,14 +304,14 @@ function Login({ onLogin }) {
   };
 
   if (vista === 'forgot') return (
-    <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+    <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', padding:'1rem' }}>
       <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
       <ForgotPassword onVolver={() => setVista('login')}/>
     </div>
   );
 
   if (vista === 'reset') return (
-    <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+    <div style={{ width:'100vw', height:'100vh', background:C.dark, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', padding:'1rem' }}>
       <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
       <ResetPassword token={resetToken} onVolver={() => setVista('login')}/>
     </div>
@@ -314,7 +324,7 @@ function Login({ onLogin }) {
       <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)', backgroundSize:'60px 60px', pointerEvents:'none' }}/>
 
       {/* LOGIN PANEL */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding:'3rem', position:'relative', zIndex:1 }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding: isMobile ? '1.5rem' : '3rem', position:'relative', zIndex:1, overflowY:'auto' }}>
         <div style={{ width:'100%', maxWidth:'360px' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'2.5rem' }}>
             <LogoHex size={48}/>
@@ -353,7 +363,6 @@ function Login({ onLogin }) {
                 <label style={s.loginLabel}>Contraseña</label>
                 <input style={s.loginInput} type="password" value={password} onInput={e=>setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
               </div>
-              {/* FORGOT PASSWORD LINK */}
               <div style={{ textAlign:'right', marginTop:'-.4rem' }}>
                 <span style={{ fontSize:'.75rem', color:C.gold, cursor:'pointer', fontWeight:'500' }} onClick={()=>setVista('forgot')}>
                   ¿Olvidaste tu contraseña?
@@ -378,28 +387,30 @@ function Login({ onLogin }) {
         </div>
       </div>
 
-      {/* RIGHT PANEL */}
-      <div style={{ width:'420px', background:C.surface, borderLeft:`1px solid ${C.border}`, display:'flex', flexDirection:'column', justifyContent:'center', padding:'3rem 2.5rem', position:'relative', zIndex:1 }}>
-        <div style={{ position:'absolute', top:0, left:0, right:0, height:'300px', background:'radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.07) 0%, transparent 70%)', pointerEvents:'none' }}/>
-        <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.1rem', fontWeight:'800', color:C.text, marginBottom:'.5rem', letterSpacing:'-0.02em' }}>Todo lo que necesita tu negocio</div>
-        <div style={{ fontSize:'.8rem', color:C.textMuted, marginBottom:'2rem', lineHeight:1.6 }}>Gestión completa en una sola plataforma profesional.</div>
-        {[
-          { icon:'users', color:C.blue, title:'Gestión de Clientes', desc:'Cartera completa con historial y etiquetas' },
-          { icon:'calendar-days', color:C.green, title:'Agenda Inteligente', desc:'Citas y estados en tiempo real' },
-          { icon:'money-bill-wave', color:C.gold, title:'Punto de Venta', desc:'Ventas con múltiples métodos de pago' },
-          { icon:'boxes-stacked', color:C.purple, title:'Control de Inventario', desc:'Stock con alertas automáticas' },
-        ].map(({ icon, color, title, desc })=>(
-          <div key={title} style={{ display:'flex', alignItems:'flex-start', gap:'.85rem', marginBottom:'1rem', padding:'.85rem', background:C.surface2, borderRadius:'10px', border:`1px solid ${C.border}` }}>
-            <div style={{ width:'34px', height:'34px', minWidth:'34px', borderRadius:'9px', background:`${color}15`, border:`1px solid ${color}25`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <Icon name={icon} style={{ color, fontSize:'.85rem' }}/>
+      {/* RIGHT PANEL — solo en desktop */}
+      {!isMobile && (
+        <div style={{ width:'420px', background:C.surface, borderLeft:`1px solid ${C.border}`, display:'flex', flexDirection:'column', justifyContent:'center', padding:'3rem 2.5rem', position:'relative', zIndex:1 }}>
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:'300px', background:'radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.07) 0%, transparent 70%)', pointerEvents:'none' }}/>
+          <div style={{ fontFamily:"'Syne', sans-serif", fontSize:'1.1rem', fontWeight:'800', color:C.text, marginBottom:'.5rem', letterSpacing:'-0.02em' }}>Todo lo que necesita tu negocio</div>
+          <div style={{ fontSize:'.8rem', color:C.textMuted, marginBottom:'2rem', lineHeight:1.6 }}>Gestión completa en una sola plataforma profesional.</div>
+          {[
+            { icon:'users', color:C.blue, title:'Gestión de Clientes', desc:'Cartera completa con historial y etiquetas' },
+            { icon:'calendar-days', color:C.green, title:'Agenda Inteligente', desc:'Citas y estados en tiempo real' },
+            { icon:'money-bill-wave', color:C.gold, title:'Punto de Venta', desc:'Ventas con múltiples métodos de pago' },
+            { icon:'boxes-stacked', color:C.purple, title:'Control de Inventario', desc:'Stock con alertas automáticas' },
+          ].map(({ icon, color, title, desc })=>(
+            <div key={title} style={{ display:'flex', alignItems:'flex-start', gap:'.85rem', marginBottom:'1rem', padding:'.85rem', background:C.surface2, borderRadius:'10px', border:`1px solid ${C.border}` }}>
+              <div style={{ width:'34px', height:'34px', minWidth:'34px', borderRadius:'9px', background:`${color}15`, border:`1px solid ${color}25`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <Icon name={icon} style={{ color, fontSize:'.85rem' }}/>
+              </div>
+              <div>
+                <div style={{ fontSize:'.82rem', fontWeight:'600', color:C.text, marginBottom:'.15rem' }}>{title}</div>
+                <div style={{ fontSize:'.72rem', color:C.textMuted, lineHeight:1.5 }}>{desc}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize:'.82rem', fontWeight:'600', color:C.text, marginBottom:'.15rem' }}>{title}</div>
-              <div style={{ fontSize:'.72rem', color:C.textMuted, lineHeight:1.5 }}>{desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -407,7 +418,7 @@ function Login({ onLogin }) {
 // ══════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════
-function Dashboard({ token }) {
+function Dashboard({ token, isMobile }) {
   const [stats, setStats] = useState({ clientes:0, citas:0, ventas:0, productos:0, ingresos:0 });
   useEffect(()=>{
     const h=getHeaders(token);
@@ -426,19 +437,19 @@ function Dashboard({ token }) {
 
   return (
     <div>
-      <div style={s.pageHeader}>
+      <div style={{ ...s.pageHeader, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '.75rem' : '0' }}>
         <div><div style={s.pageTitle}>Dashboard</div><div style={s.pageSub}>Resumen general de tu negocio</div></div>
         <div style={{ display:'flex', alignItems:'center', gap:'.5rem', background:C.surface, border:`1px solid ${C.border}`, borderRadius:'9px', padding:'.5rem .9rem', fontSize:'.75rem', color:C.textSub }}>
           <Icon name="circle" style={{ color:C.green, fontSize:'.5rem' }}/> Sistema operativo
         </div>
       </div>
-      <div style={s.statsGrid}>
+      <div style={{ ...s.statsGrid, gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)' }}>
         {statCards.map(({ label, value, sub, icon, color })=>(
           <div key={label} style={s.statCard(color)}>
             <div style={s.statGlow(color)}/>
             <div style={s.statIcon(color)}><Icon name={icon} style={{ color, fontSize:'.85rem' }}/></div>
             <div style={s.statLabel}>{label}</div>
-            <div style={s.statValue}>{value}</div>
+            <div style={{ ...s.statValue, fontSize: isMobile ? '1.4rem' : '1.8rem' }}>{value}</div>
             <div style={s.statSub}>{sub}</div>
           </div>
         ))}
@@ -449,7 +460,7 @@ function Dashboard({ token }) {
           <span style={s.badge(C.green,'rgba(16,185,129,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.green,display:'inline-block' }}/>Todos conectados</span>
         </div>
         <div style={s.cardBody}>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'1rem' }}>
+          <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap:'1rem' }}>
             {[{icon:'users',color:C.blue,title:'Clientes',desc:'Gestiona tu cartera'},{icon:'calendar-days',color:C.green,title:'Citas',desc:'Agenda y calendario'},{icon:'money-bill-wave',color:C.gold,title:'Ventas',desc:'POS e historial'},{icon:'boxes-stacked',color:C.purple,title:'Inventario',desc:'Stock y productos'}].map(({ icon, color, title, desc })=>(
               <div key={title} style={{ background:C.surface2, borderRadius:'12px', padding:'1.25rem', border:`1px solid ${C.border}` }}>
                 <div style={{ width:'38px', height:'38px', borderRadius:'10px', background:`${color}15`, border:`1px solid ${color}20`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'.75rem' }}>
@@ -469,7 +480,7 @@ function Dashboard({ token }) {
 // ══════════════════════════════════════
 // CLIENTES
 // ══════════════════════════════════════
-function Clientes({ token }) {
+function Clientes({ token, isMobile }) {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -488,9 +499,9 @@ function Clientes({ token }) {
 
   return (
     <div>
-      <div style={s.pageHeader}>
+      <div style={{ ...s.pageHeader, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '.75rem' : '0' }}>
         <div><div style={s.pageTitle}>Clientes</div><div style={s.pageSub}>{clientes.length} clientes registrados</div></div>
-        <button style={s.btnPrimary} onClick={abrirNuevo}><Icon name="user-plus"/> Nuevo Cliente</button>
+        <button style={{ ...s.btnPrimary, width: isMobile ? '100%' : 'auto', justifyContent:'center' }} onClick={abrirNuevo}><Icon name="user-plus"/> Nuevo Cliente</button>
       </div>
       <div style={{ marginBottom:'1rem', position:'relative' }}>
         <Icon name="magnifying-glass" style={{ position:'absolute', left:'.9rem', top:'50%', transform:'translateY(-50%)', color:C.textMuted, fontSize:'.8rem' }}/>
@@ -499,7 +510,7 @@ function Clientes({ token }) {
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
           <table style={s.table}>
-            <thead><tr><th style={s.th}>#</th><th style={s.th}>Cliente</th><th style={s.th}>Contacto</th><th style={s.th}>Ciudad</th><th style={s.th}>Etiqueta</th><th style={s.th}>Acciones</th></tr></thead>
+            <thead><tr><th style={s.th}>#</th><th style={s.th}>Cliente</th>{!isMobile && <th style={s.th}>Contacto</th>}{!isMobile && <th style={s.th}>Ciudad</th>}<th style={s.th}>Etiqueta</th><th style={s.th}>Acciones</th></tr></thead>
             <tbody>
               {loading ? <tr><td colSpan="6" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
               : filtrados.length===0 ? <tr><td colSpan="6"><div style={s.emptyState}><Icon name="users" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay clientes</div><div style={s.emptyDesc}>Crea tu primer cliente</div></div></td></tr>
@@ -509,15 +520,15 @@ function Clientes({ token }) {
                   <td style={s.td}>
                     <div style={{ display:'flex', alignItems:'center', gap:'.7rem' }}>
                       <div style={{ width:'30px', height:'30px', minWidth:'30px', borderRadius:'50%', background:`linear-gradient(135deg,${C.blue},${C.purple})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'.72rem', fontWeight:'700', color:'white' }}>{c.nombre?.charAt(0)}{c.apellido?.charAt(0)}</div>
-                      <div><div style={{ fontSize:'.83rem', fontWeight:'600', color:C.text }}>{c.nombre} {c.apellido}</div><div style={{ fontSize:'.72rem', color:C.textMuted }}>{c.email||'Sin email'}</div></div>
+                      <div><div style={{ fontSize:'.83rem', fontWeight:'600', color:C.text }}>{c.nombre} {c.apellido}</div>{!isMobile && <div style={{ fontSize:'.72rem', color:C.textMuted }}>{c.email||'Sin email'}</div>}</div>
                     </div>
                   </td>
-                  <td style={s.td}>{c.telefono||'—'}</td>
-                  <td style={s.td}>{c.ciudad||'—'}</td>
+                  {!isMobile && <td style={s.td}>{c.telefono||'—'}</td>}
+                  {!isMobile && <td style={s.td}>{c.ciudad||'—'}</td>}
                   <td style={s.td}><BadgeEstado estado={c.etiqueta}/></td>
                   <td style={s.td}>
                     <div style={{ display:'flex', gap:'.4rem' }}>
-                      <button style={s.btnBlue} onClick={()=>abrirEditar(c)}><Icon name="pen-to-square"/> Editar</button>
+                      <button style={s.btnBlue} onClick={()=>abrirEditar(c)}><Icon name="pen-to-square"/>{!isMobile && ' Editar'}</button>
                       <button style={s.btnDanger} onClick={()=>eliminar(c.id)}><Icon name="trash"/></button>
                     </div>
                   </td>
@@ -535,14 +546,14 @@ function Clientes({ token }) {
               <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
-              <div style={s.formGrid}>
+              <div style={{ ...s.formGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
                 <div style={s.field}><label style={s.label}>Nombre *</label><input style={s.input} value={form.nombre} onInput={e=>setForm({...form,nombre:e.target.value})} placeholder="Juan"/></div>
                 <div style={s.field}><label style={s.label}>Apellido</label><input style={s.input} value={form.apellido} onInput={e=>setForm({...form,apellido:e.target.value})} placeholder="López"/></div>
                 <div style={s.field}><label style={s.label}>Email</label><input style={s.input} type="email" value={form.email} onInput={e=>setForm({...form,email:e.target.value})} placeholder="juan@email.com"/></div>
                 <div style={s.field}><label style={s.label}>Teléfono</label><input style={s.input} value={form.telefono} onInput={e=>setForm({...form,telefono:e.target.value})} placeholder="9876-5432"/></div>
                 <div style={s.field}><label style={s.label}>Ciudad</label><input style={s.input} value={form.ciudad} onInput={e=>setForm({...form,ciudad:e.target.value})} placeholder="San Pedro Sula"/></div>
                 <div style={s.field}><label style={s.label}>Etiqueta</label><select style={s.select} value={form.etiqueta} onChange={e=>setForm({...form,etiqueta:e.target.value})}><option value="nuevo">Nuevo</option><option value="regular">Regular</option><option value="vip">VIP</option><option value="premium">Premium</option></select></div>
-                <div style={{...s.field,gridColumn:'span 2'}}><label style={s.label}>Notas</label><textarea style={s.textarea} value={form.notas} onInput={e=>setForm({...form,notas:e.target.value})} placeholder="Observaciones..."/></div>
+                <div style={{...s.field, gridColumn: isMobile ? '1' : 'span 2'}}><label style={s.label}>Notas</label><textarea style={s.textarea} value={form.notas} onInput={e=>setForm({...form,notas:e.target.value})} placeholder="Observaciones..."/></div>
               </div>
             </div>
             <div style={s.modalFooter}>
@@ -559,7 +570,7 @@ function Clientes({ token }) {
 // ══════════════════════════════════════
 // CITAS
 // ══════════════════════════════════════
-function Citas({ token }) {
+function Citas({ token, isMobile }) {
   const [citas, setCitas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -575,30 +586,29 @@ function Citas({ token }) {
 
   return (
     <div>
-      <div style={s.pageHeader}>
+      <div style={{ ...s.pageHeader, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '.75rem' : '0' }}>
         <div><div style={s.pageTitle}>Citas</div><div style={s.pageSub}>{citas.length} citas registradas</div></div>
-        <button style={s.btnPrimary} onClick={()=>setModal(true)}><Icon name="calendar-plus"/> Nueva Cita</button>
+        <button style={{ ...s.btnPrimary, width: isMobile ? '100%' : 'auto', justifyContent:'center' }} onClick={()=>setModal(true)}><Icon name="calendar-plus"/> Nueva Cita</button>
       </div>
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
           <table style={s.table}>
-            <thead><tr><th style={s.th}>#</th><th style={s.th}>Cliente</th><th style={s.th}>Servicio</th><th style={s.th}>Fecha & Hora</th><th style={s.th}>Duración</th><th style={s.th}>Estado</th><th style={s.th}>Acciones</th></tr></thead>
+            <thead><tr><th style={s.th}>#</th><th style={s.th}>Cliente</th>{!isMobile && <th style={s.th}>Servicio</th>}<th style={s.th}>Fecha</th><th style={s.th}>Estado</th><th style={s.th}>Acciones</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
-              : citas.length===0 ? <tr><td colSpan="7"><div style={s.emptyState}><Icon name="calendar-days" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay citas</div><div style={s.emptyDesc}>Agenda tu primera cita</div></div></td></tr>
+              {loading ? <tr><td colSpan="6" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
+              : citas.length===0 ? <tr><td colSpan="6"><div style={s.emptyState}><Icon name="calendar-days" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay citas</div><div style={s.emptyDesc}>Agenda tu primera cita</div></div></td></tr>
               : citas.map((c,i)=>(
                 <tr key={c.id}>
                   <td style={{...s.td,color:C.textMuted,fontFamily:'monospace',fontSize:'.75rem'}}>{i+1}</td>
                   <td style={{...s.td,color:C.text,fontWeight:'600'}}>{c.cliente_nombre||'—'}</td>
-                  <td style={s.td}>{c.servicio||'—'}</td>
+                  {!isMobile && <td style={s.td}>{c.servicio||'—'}</td>}
                   <td style={s.td}><div style={{ fontSize:'.82rem', color:C.text }}>{c.fecha?.split('T')[0]||'—'}</div><div style={{ fontSize:'.72rem', color:C.textMuted }}>{c.hora_inicio||'—'}</div></td>
-                  <td style={s.td}><span style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'6px', padding:'.2rem .6rem', fontSize:'.72rem', color:C.textSub }}>{c.duracion_min} min</span></td>
                   <td style={s.td}><BadgeEstado estado={c.estado}/></td>
                   <td style={s.td}>
                     <div style={{ display:'flex', gap:'.35rem', flexWrap:'wrap' }}>
-                      {c.estado==='pendiente' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'confirmada')}><Icon name="check"/> Confirmar</button>}
-                      {c.estado==='confirmada' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'completada')}><Icon name="check-double"/> Completar</button>}
-                      {c.estado!=='cancelada'&&c.estado!=='completada' && <button style={s.btnDanger} onClick={()=>cambiarEstado(c.id,'cancelada')}><Icon name="ban"/> Cancelar</button>}
+                      {c.estado==='pendiente' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'confirmada')}><Icon name="check"/>{!isMobile && ' Confirmar'}</button>}
+                      {c.estado==='confirmada' && <button style={s.btnSuccess} onClick={()=>cambiarEstado(c.id,'completada')}><Icon name="check-double"/>{!isMobile && ' Completar'}</button>}
+                      {c.estado!=='cancelada'&&c.estado!=='completada' && <button style={s.btnDanger} onClick={()=>cambiarEstado(c.id,'cancelada')}><Icon name="ban"/>{!isMobile && ' Cancelar'}</button>}
                       <button style={s.btnSmall} onClick={()=>eliminar(c.id)}><Icon name="trash"/></button>
                     </div>
                   </td>
@@ -616,13 +626,13 @@ function Citas({ token }) {
               <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
-              <div style={s.formGrid}>
-                <div style={{...s.field,gridColumn:'span 2'}}><label style={s.label}>Cliente *</label><select style={s.select} value={form.cliente_id} onChange={e=>setForm({...form,cliente_id:e.target.value})}><option value="">Seleccionar cliente...</option>{clientes.map(c=><option key={c.id} value={c.id}>{c.nombre} {c.apellido}</option>)}</select></div>
-                <div style={{...s.field,gridColumn:'span 2'}}><label style={s.label}>Servicio</label><input style={s.input} value={form.servicio} onInput={e=>setForm({...form,servicio:e.target.value})} placeholder="Ej: Consulta general"/></div>
+              <div style={{ ...s.formGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+                <div style={{...s.field, gridColumn: isMobile ? '1' : 'span 2'}}><label style={s.label}>Cliente *</label><select style={s.select} value={form.cliente_id} onChange={e=>setForm({...form,cliente_id:e.target.value})}><option value="">Seleccionar cliente...</option>{clientes.map(c=><option key={c.id} value={c.id}>{c.nombre} {c.apellido}</option>)}</select></div>
+                <div style={{...s.field, gridColumn: isMobile ? '1' : 'span 2'}}><label style={s.label}>Servicio</label><input style={s.input} value={form.servicio} onInput={e=>setForm({...form,servicio:e.target.value})} placeholder="Ej: Consulta general"/></div>
                 <div style={s.field}><label style={s.label}>Fecha *</label><input style={s.input} type="date" value={form.fecha} onInput={e=>setForm({...form,fecha:e.target.value})}/></div>
                 <div style={s.field}><label style={s.label}>Hora *</label><input style={s.input} type="time" value={form.hora_inicio} onInput={e=>setForm({...form,hora_inicio:e.target.value})}/></div>
-                <div style={{...s.field,gridColumn:'span 2'}}><label style={s.label}>Duración</label><select style={s.select} value={form.duracion_min} onChange={e=>setForm({...form,duracion_min:parseInt(e.target.value)})}><option value={30}>30 minutos</option><option value={45}>45 minutos</option><option value={60}>60 minutos</option><option value={90}>90 minutos</option><option value={120}>2 horas</option></select></div>
-                <div style={{...s.field,gridColumn:'span 2'}}><label style={s.label}>Notas</label><textarea style={s.textarea} value={form.notas} onInput={e=>setForm({...form,notas:e.target.value})} placeholder="Instrucciones especiales..."/></div>
+                <div style={{...s.field, gridColumn: isMobile ? '1' : 'span 2'}}><label style={s.label}>Duración</label><select style={s.select} value={form.duracion_min} onChange={e=>setForm({...form,duracion_min:parseInt(e.target.value)})}><option value={30}>30 minutos</option><option value={45}>45 minutos</option><option value={60}>60 minutos</option><option value={90}>90 minutos</option><option value={120}>2 horas</option></select></div>
+                <div style={{...s.field, gridColumn: isMobile ? '1' : 'span 2'}}><label style={s.label}>Notas</label><textarea style={s.textarea} value={form.notas} onInput={e=>setForm({...form,notas:e.target.value})} placeholder="Instrucciones especiales..."/></div>
               </div>
             </div>
             <div style={s.modalFooter}>
@@ -639,7 +649,7 @@ function Citas({ token }) {
 // ══════════════════════════════════════
 // VENTAS
 // ══════════════════════════════════════
-function Ventas({ token }) {
+function Ventas({ token, isMobile }) {
   const [ventas, setVentas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -660,24 +670,23 @@ function Ventas({ token }) {
 
   return (
     <div>
-      <div style={s.pageHeader}>
+      <div style={{ ...s.pageHeader, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '.75rem' : '0' }}>
         <div><div style={s.pageTitle}>Ventas</div><div style={s.pageSub}>{ventas.length} ventas · ${totalIngresos.toFixed(2)} en ingresos</div></div>
-        <button style={s.btnPrimary} onClick={()=>setModal(true)}><Icon name="plus"/> Nueva Venta</button>
+        <button style={{ ...s.btnPrimary, width: isMobile ? '100%' : 'auto', justifyContent:'center' }} onClick={()=>setModal(true)}><Icon name="plus"/> Nueva Venta</button>
       </div>
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
           <table style={s.table}>
-            <thead><tr><th style={s.th}>#</th><th style={s.th}>Cliente</th><th style={s.th}>Fecha</th><th style={s.th}>Pago</th><th style={s.th}>Subtotal</th><th style={s.th}>Total</th><th style={s.th}>Estado</th></tr></thead>
+            <thead><tr><th style={s.th}>#</th><th style={s.th}>Cliente</th>{!isMobile && <th style={s.th}>Fecha</th>}{!isMobile && <th style={s.th}>Pago</th>}<th style={s.th}>Total</th><th style={s.th}>Estado</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
-              : ventas.length===0 ? <tr><td colSpan="7"><div style={s.emptyState}><Icon name="money-bill-wave" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay ventas</div><div style={s.emptyDesc}>Registra tu primera venta</div></div></td></tr>
+              {loading ? <tr><td colSpan="6" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
+              : ventas.length===0 ? <tr><td colSpan="6"><div style={s.emptyState}><Icon name="money-bill-wave" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay ventas</div><div style={s.emptyDesc}>Registra tu primera venta</div></div></td></tr>
               : ventas.map((v,i)=>(
                 <tr key={v.id}>
                   <td style={{...s.td,color:C.textMuted,fontFamily:'monospace',fontSize:'.75rem'}}>{i+1}</td>
                   <td style={{...s.td,color:C.text,fontWeight:'600'}}>{v.cliente_nombre||'Cliente general'}</td>
-                  <td style={{...s.td,fontFamily:'monospace',fontSize:'.78rem'}}>{v.creado_en?.split('T')[0]||'—'}</td>
-                  <td style={s.td}><BadgeEstado estado={v.metodo_pago}/></td>
-                  <td style={{...s.td,fontFamily:'monospace'}}>${parseFloat(v.subtotal||0).toFixed(2)}</td>
+                  {!isMobile && <td style={{...s.td,fontFamily:'monospace',fontSize:'.78rem'}}>{v.creado_en?.split('T')[0]||'—'}</td>}
+                  {!isMobile && <td style={s.td}><BadgeEstado estado={v.metodo_pago}/></td>}
                   <td style={{...s.td,fontFamily:'monospace',fontWeight:'700'}}><span style={{ color:C.gold }}>${parseFloat(v.total||0).toFixed(2)}</span></td>
                   <td style={s.td}><BadgeEstado estado={v.estado||'pagado'}/></td>
                 </tr>
@@ -694,7 +703,7 @@ function Ventas({ token }) {
               <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
-              <div style={s.formGrid}>
+              <div style={{ ...s.formGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
                 <div style={s.field}><label style={s.label}>Cliente</label><select style={s.select} value={form.cliente_id} onChange={e=>setForm({...form,cliente_id:e.target.value})}><option value="">Cliente general</option>{clientes.map(c=><option key={c.id} value={c.id}>{c.nombre} {c.apellido}</option>)}</select></div>
                 <div style={s.field}><label style={s.label}>Método de Pago</label><select style={s.select} value={form.metodo_pago} onChange={e=>setForm({...form,metodo_pago:e.target.value})}><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option></select></div>
               </div>
@@ -706,15 +715,15 @@ function Ventas({ token }) {
               {form.items.length===0 ? (
                 <div style={{ textAlign:'center', padding:'1.5rem', color:C.textMuted, background:C.surface2, borderRadius:'10px', fontSize:'.82rem', border:`1px dashed ${C.border2}` }}>Haz clic en "Agregar producto" para comenzar</div>
               ) : form.items.map((item,i)=>(
-                <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 80px 100px auto', gap:'.75rem', alignItems:'end', marginBottom:'.5rem', background:C.surface2, borderRadius:'10px', padding:'.75rem', border:`1px solid ${C.border}` }}>
+                <div key={i} style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 60px auto' : '1fr 80px 100px auto', gap:'.75rem', alignItems:'end', marginBottom:'.5rem', background:C.surface2, borderRadius:'10px', padding:'.75rem', border:`1px solid ${C.border}` }}>
                   <div style={s.field}><label style={{...s.label,fontSize:'.6rem'}}>Producto</label><select style={s.select} value={item.producto_id} onChange={e=>actualizarItem(i,'producto_id',e.target.value)}><option value="">Seleccionar...</option>{productos.map(p=><option key={p.id} value={p.id}>{p.nombre} — ${p.precio_venta}</option>)}</select></div>
                   <div style={s.field}><label style={{...s.label,fontSize:'.6rem'}}>Cant.</label><input style={s.input} type="number" min="1" value={item.cantidad} onInput={e=>actualizarItem(i,'cantidad',parseInt(e.target.value)||1)}/></div>
-                  <div style={s.field}><label style={{...s.label,fontSize:'.6rem'}}>Precio</label><input style={s.input} type="number" value={item.precio_unit} onInput={e=>actualizarItem(i,'precio_unit',parseFloat(e.target.value)||0)}/></div>
+                  {!isMobile && <div style={s.field}><label style={{...s.label,fontSize:'.6rem'}}>Precio</label><input style={s.input} type="number" value={item.precio_unit} onInput={e=>actualizarItem(i,'precio_unit',parseFloat(e.target.value)||0)}/></div>}
                   <button style={s.btnDanger} onClick={()=>quitarItem(i)}><Icon name="xmark"/></button>
                 </div>
               ))}
               <div style={s.divider}/>
-              <div style={s.formGrid}>
+              <div style={{ ...s.formGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
                 <div style={s.field}><label style={s.label}>Descuento (%)</label><input style={s.input} type="number" min="0" max="100" value={form.descuento_pct} onInput={e=>setForm({...form,descuento_pct:parseFloat(e.target.value)||0})}/></div>
                 <div style={s.field}><label style={s.label}>Impuesto (%)</label><input style={s.input} type="number" min="0" value={form.impuesto_pct} onInput={e=>setForm({...form,impuesto_pct:parseFloat(e.target.value)||0})}/></div>
               </div>
@@ -727,7 +736,7 @@ function Ventas({ token }) {
             </div>
             <div style={s.modalFooter}>
               <button style={s.btnSecondary} onClick={()=>setModal(false)}><Icon name="xmark"/> Cancelar</button>
-              <button style={s.btnPrimary} onClick={guardar}><Icon name="check"/> Registrar Venta — ${total.toFixed(2)}</button>
+              <button style={s.btnPrimary} onClick={guardar}><Icon name="check"/> Registrar — ${total.toFixed(2)}</button>
             </div>
           </div>
         </div>
@@ -739,7 +748,7 @@ function Ventas({ token }) {
 // ══════════════════════════════════════
 // INVENTARIO
 // ══════════════════════════════════════
-function Inventario({ token }) {
+function Inventario({ token, isMobile }) {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -757,9 +766,9 @@ function Inventario({ token }) {
 
   return (
     <div>
-      <div style={s.pageHeader}>
+      <div style={{ ...s.pageHeader, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '.75rem' : '0' }}>
         <div><div style={s.pageTitle}>Inventario</div><div style={s.pageSub}>{productos.length} productos · {stockBajo.length} con stock crítico</div></div>
-        <button style={s.btnPrimary} onClick={abrirNuevo}><Icon name="plus"/> Nuevo Producto</button>
+        <button style={{ ...s.btnPrimary, width: isMobile ? '100%' : 'auto', justifyContent:'center' }} onClick={abrirNuevo}><Icon name="plus"/> Nuevo Producto</button>
       </div>
       {stockBajo.length>0 && (
         <div style={{ background:'rgba(239,68,68,0.06)', border:`1px solid rgba(239,68,68,0.2)`, borderRadius:'12px', padding:'.9rem 1.2rem', marginBottom:'1.2rem', display:'flex', alignItems:'center', gap:'.75rem' }}>
@@ -770,28 +779,26 @@ function Inventario({ token }) {
       <div style={s.card}>
         <div style={{ overflowX:'auto' }}>
           <table style={s.table}>
-            <thead><tr><th style={s.th}>SKU</th><th style={s.th}>Producto</th><th style={s.th}>Categoría</th><th style={s.th}>Tipo</th><th style={s.th}>Venta</th><th style={s.th}>Costo</th><th style={s.th}>Stock</th><th style={s.th}>Estado</th><th style={s.th}>Acciones</th></tr></thead>
+            <thead><tr>{!isMobile && <th style={s.th}>SKU</th>}<th style={s.th}>Producto</th>{!isMobile && <th style={s.th}>Tipo</th>}<th style={s.th}>Venta</th>{!isMobile && <th style={s.th}>Stock</th>}<th style={s.th}>Estado</th><th style={s.th}>Acciones</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan="9" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
-              : productos.length===0 ? <tr><td colSpan="9"><div style={s.emptyState}><Icon name="boxes-stacked" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay productos</div><div style={s.emptyDesc}>Agrega tu primer producto</div></div></td></tr>
+              {loading ? <tr><td colSpan="7" style={{...s.td,textAlign:'center',padding:'3rem'}}><Icon name="spinner" style={{ color:C.textMuted }}/></td></tr>
+              : productos.length===0 ? <tr><td colSpan="7"><div style={s.emptyState}><Icon name="boxes-stacked" style={{ fontSize:'2rem', color:C.textMuted }}/><div style={s.emptyTitle}>No hay productos</div><div style={s.emptyDesc}>Agrega tu primer producto</div></div></td></tr>
               : productos.map(p=>(
                 <tr key={p.id}>
-                  <td style={{...s.td,fontFamily:'monospace',color:C.gold,fontSize:'.75rem'}}>{p.sku||'—'}</td>
+                  {!isMobile && <td style={{...s.td,fontFamily:'monospace',color:C.gold,fontSize:'.75rem'}}>{p.sku||'—'}</td>}
                   <td style={{...s.td,color:C.text,fontWeight:'600'}}>{p.nombre}</td>
-                  <td style={s.td}>{p.categoria||'—'}</td>
-                  <td style={s.td}><span style={s.badge(p.tipo==='servicio'?C.purple:C.blue,p.tipo==='servicio'?'rgba(139,92,246,0.1)':'rgba(59,130,246,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:p.tipo==='servicio'?C.purple:C.blue,display:'inline-block' }}/>{p.tipo}</span></td>
+                  {!isMobile && <td style={s.td}><span style={s.badge(p.tipo==='servicio'?C.purple:C.blue,p.tipo==='servicio'?'rgba(139,92,246,0.1)':'rgba(59,130,246,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:p.tipo==='servicio'?C.purple:C.blue,display:'inline-block' }}/>{p.tipo}</span></td>}
                   <td style={{...s.td,fontFamily:'monospace',fontWeight:'700',color:C.gold}}>${parseFloat(p.precio_venta||0).toFixed(2)}</td>
-                  <td style={{...s.td,fontFamily:'monospace'}}>${parseFloat(p.precio_costo||0).toFixed(2)}</td>
-                  <td style={s.td}>{p.tipo==='servicio'?<span style={{ color:C.textMuted }}>—</span>:<span style={{ color:p.stock_actual<=p.stock_minimo?C.red:C.green,fontWeight:'700',fontSize:'.82rem' }}>{p.stock_actual} <span style={{ color:C.textMuted,fontWeight:'400',fontSize:'.7rem' }}>/ {p.stock_minimo}</span></span>}</td>
+                  {!isMobile && <td style={s.td}>{p.tipo==='servicio'?<span style={{ color:C.textMuted }}>—</span>:<span style={{ color:p.stock_actual<=p.stock_minimo?C.red:C.green,fontWeight:'700',fontSize:'.82rem' }}>{p.stock_actual}</span>}</td>}
                   <td style={s.td}>
                     {p.tipo==='servicio'?<span style={s.badge(C.purple,'rgba(139,92,246,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.purple,display:'inline-block' }}/>Servicio</span>
                     :p.stock_actual<=0?<span style={s.badge(C.red,'rgba(239,68,68,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.red,display:'inline-block' }}/>Agotado</span>
-                    :p.stock_actual<=p.stock_minimo?<span style={s.badge(C.gold,'rgba(245,166,35,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.gold,display:'inline-block' }}/>Stock bajo</span>
+                    :p.stock_actual<=p.stock_minimo?<span style={s.badge(C.gold,'rgba(245,166,35,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.gold,display:'inline-block' }}/>Bajo</span>
                     :<span style={s.badge(C.green,'rgba(16,185,129,0.1)')}><span style={{ width:'5px',height:'5px',borderRadius:'50%',background:C.green,display:'inline-block' }}/>Normal</span>}
                   </td>
                   <td style={s.td}>
                     <div style={{ display:'flex', gap:'.4rem' }}>
-                      <button style={s.btnBlue} onClick={()=>abrirEditar(p)}><Icon name="pen-to-square"/> Editar</button>
+                      <button style={s.btnBlue} onClick={()=>abrirEditar(p)}><Icon name="pen-to-square"/>{!isMobile && ' Editar'}</button>
                       <button style={s.btnDanger} onClick={()=>eliminar(p.id)}><Icon name="trash"/></button>
                     </div>
                   </td>
@@ -809,8 +816,8 @@ function Inventario({ token }) {
               <button style={s.btnSmall} onClick={()=>setModal(false)}><Icon name="xmark"/></button>
             </div>
             <div style={s.modalBody}>
-              <div style={s.formGrid}>
-                <div style={{...s.field,gridColumn:'span 2'}}><label style={s.label}>Nombre *</label><input style={s.input} value={form.nombre} onInput={e=>setForm({...form,nombre:e.target.value})} placeholder="Producto Premium A"/></div>
+              <div style={{ ...s.formGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+                <div style={{...s.field, gridColumn: isMobile ? '1' : 'span 2'}}><label style={s.label}>Nombre *</label><input style={s.input} value={form.nombre} onInput={e=>setForm({...form,nombre:e.target.value})} placeholder="Producto Premium A"/></div>
                 <div style={s.field}><label style={s.label}>SKU</label><input style={s.input} value={form.sku} onInput={e=>setForm({...form,sku:e.target.value})} placeholder="PRD-001"/></div>
                 <div style={s.field}><label style={s.label}>Categoría</label><input style={s.input} value={form.categoria} onInput={e=>setForm({...form,categoria:e.target.value})} placeholder="Electrónica"/></div>
                 <div style={s.field}><label style={s.label}>Tipo</label><select style={s.select} value={form.tipo} onChange={e=>setForm({...form,tipo:e.target.value})}><option value="producto">Producto</option><option value="servicio">Servicio</option></select></div>
@@ -837,6 +844,8 @@ export function App() {
   const [usuario, setUsuario] = useState(()=>{ const u=localStorage.getItem('usuario'); return u?JSON.parse(u):null; });
   const [token, setToken] = useState(()=>localStorage.getItem('token')||'');
   const [pagina, setPagina] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const logout = () => { localStorage.clear(); setUsuario(null); setToken(''); };
 
@@ -846,6 +855,7 @@ export function App() {
   };
 
   if (!usuario) return <Login onLogin={handleLogin}/>;
+
   const navItems = [
     { id:'dashboard',  icon:'chart-pie',      label:'Dashboard' },
     { id:'clientes',   icon:'users',           label:'Clientes' },
@@ -856,54 +866,84 @@ export function App() {
 
   const current = navItems.find(n=>n.id===pagina);
 
+  const handleNav = (id) => {
+    setPagina(id);
+    if (isMobile) setSidebarOpen(false);
+  };
+
+  const SidebarContent = () => (
+    <>
+      <div style={s.sidebarGlow}/>
+      <div style={s.sidebarHeader}>
+        <LogoHex size={32}/>
+        <div style={s.logoText}>Manage<span style={s.logoX}>X</span></div>
+        {isMobile && <button onClick={()=>setSidebarOpen(false)} style={{ marginLeft:'auto', background:'transparent', border:'none', color:C.textMuted, cursor:'pointer', fontSize:'1.1rem' }}><Icon name="xmark"/></button>}
+      </div>
+      <nav style={{ flex:1, padding:'.6rem .5rem', overflowY:'auto' }}>
+        <div style={s.navSection}>Principal</div>
+        {navItems.map(item=>(
+          <div key={item.id} style={s.navItem(pagina===item.id)} onClick={()=>handleNav(item.id)}>
+            <span style={s.navIcon(pagina===item.id)}><Icon name={item.icon}/></span>
+            <span>{item.label}</span>
+            {pagina===item.id && <span style={{ marginLeft:'auto', width:'5px', height:'5px', borderRadius:'50%', background:C.gold }}/>}
+          </div>
+        ))}
+      </nav>
+      <div style={s.sidebarFooter}>
+        <div style={s.userCard}>
+          <div style={s.avatar}>{usuario.nombre?.charAt(0)?.toUpperCase()}</div>
+          <div style={{ minWidth:0 }}>
+            <div style={s.userName}>{usuario.nombre}</div>
+            <div style={s.userRole}>{usuario.rol}</div>
+          </div>
+        </div>
+        <button style={s.btnLogout} onClick={logout}><Icon name="right-from-bracket"/> Cerrar Sesión</button>
+      </div>
+    </>
+  );
+
   return (
     <div style={s.app}>
-      <aside style={s.sidebar}>
-        <div style={s.sidebarGlow}/>
-        <div style={s.sidebarHeader}>
-          <LogoHex size={32}/>
-          <div style={s.logoText}>Manage<span style={s.logoX}>X</span></div>
-        </div>
-        <nav style={{ flex:1, padding:'.6rem .5rem', overflowY:'auto' }}>
-          <div style={s.navSection}>Principal</div>
-          {navItems.map(item=>(
-            <div key={item.id} style={s.navItem(pagina===item.id)} onClick={()=>setPagina(item.id)}>
-              <span style={s.navIcon(pagina===item.id)}><Icon name={item.icon}/></span>
-              <span>{item.label}</span>
-              {pagina===item.id && <span style={{ marginLeft:'auto', width:'5px', height:'5px', borderRadius:'50%', background:C.gold }}/>}
-            </div>
-          ))}
-        </nav>
-        <div style={s.sidebarFooter}>
-          <div style={s.userCard}>
-            <div style={s.avatar}>{usuario.nombre?.charAt(0)?.toUpperCase()}</div>
-            <div style={{ minWidth:0 }}>
-              <div style={s.userName}>{usuario.nombre}</div>
-              <div style={s.userRole}>{usuario.rol}</div>
-            </div>
-          </div>
-          <button style={s.btnLogout} onClick={logout}><Icon name="right-from-bracket"/> Cerrar Sesión</button>
-        </div>
-      </aside>
+      {/* Sidebar desktop */}
+      {!isMobile && (
+        <aside style={s.sidebar}>
+          <SidebarContent/>
+        </aside>
+      )}
+
+      {/* Sidebar mobile — overlay */}
+      {isMobile && sidebarOpen && (
+        <>
+          <div onClick={()=>setSidebarOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400 }}/>
+          <aside style={{ ...s.sidebar, position:'fixed', left:0, top:0, zIndex:500, boxShadow:'4px 0 24px rgba(0,0,0,0.4)' }}>
+            <SidebarContent/>
+          </aside>
+        </>
+      )}
 
       <div style={s.main}>
-        <div style={s.topbar}>
+        <div style={{ ...s.topbar, padding: isMobile ? '0 1rem' : '0 1.75rem' }}>
           <div style={s.topbarLeft}>
-            <div style={{ color:C.textMuted, fontSize:'.78rem' }}>ManageX</div>
-            <span style={{ color:C.textMuted }}>/</span>
+            {isMobile && (
+              <button onClick={()=>setSidebarOpen(true)} style={{ background:'transparent', border:'none', color:C.text, cursor:'pointer', fontSize:'1.1rem', marginRight:'.5rem', padding:'.25rem' }}>
+                <Icon name="bars"/>
+              </button>
+            )}
+            {!isMobile && <div style={{ color:C.textMuted, fontSize:'.78rem' }}>ManageX</div>}
+            {!isMobile && <span style={{ color:C.textMuted }}>/</span>}
             <div style={s.topbarTitle}>{current?.label}</div>
           </div>
           <div style={s.topbarRight}>
-            <div style={s.topbarBadge}><Icon name="circle" style={{ color:C.green, fontSize:'.5rem', marginRight:'.35rem' }}/>Sistema activo</div>
+            {!isMobile && <div style={s.topbarBadge}><Icon name="circle" style={{ color:C.green, fontSize:'.5rem', marginRight:'.35rem' }}/>Sistema activo</div>}
             <div style={s.topbarBadge}>v1.0</div>
           </div>
         </div>
-        <div style={s.content}>
-          {pagina==='dashboard'  && <Dashboard token={token}/>}
-          {pagina==='clientes'   && <Clientes token={token}/>}
-          {pagina==='citas'      && <Citas token={token}/>}
-          {pagina==='ventas'     && <Ventas token={token}/>}
-          {pagina==='inventario' && <Inventario token={token}/>}
+        <div style={{ ...s.content, padding: isMobile ? '1rem' : '1.75rem 2rem' }}>
+          {pagina==='dashboard'  && <Dashboard token={token} isMobile={isMobile}/>}
+          {pagina==='clientes'   && <Clientes token={token} isMobile={isMobile}/>}
+          {pagina==='citas'      && <Citas token={token} isMobile={isMobile}/>}
+          {pagina==='ventas'     && <Ventas token={token} isMobile={isMobile}/>}
+          {pagina==='inventario' && <Inventario token={token} isMobile={isMobile}/>}
         </div>
       </div>
     </div>

@@ -6,10 +6,11 @@ require('./config/database');
 
 const app = express();
 app.use(cors({
-  origin: 'https://managex-system.vercel.app',
+  origin: ['https://managex-system.vercel.app', 'https://managexhn.com', 'https://www.managexhn.com'],
   credentials: true
 }));
 app.use(express.json());
+
 
 const authRouter      = require('./routes/auth');
 const clientesRouter  = require('./routes/clientes');
